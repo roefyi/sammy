@@ -1,6 +1,6 @@
 struct IngredientData {
     static let proteins = [
-        "Roast Beef", "Grilled Chicken", "Fried Chicken", "Tuna", "Pastrami",
+        "Roast Beef", "Grilled Chicken Breast", "Fried Chicken Breast", "Tuna", "Pastrami",
         "Turkey", "Ham", "Salami", "Prosciutto",
         "Smoked Salmon", "Corned Beef", "Bacon", "Mortadella"
     ]
