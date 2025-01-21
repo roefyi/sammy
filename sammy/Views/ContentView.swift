@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedProtein = ""
+    @State private var selectedProtein = IngredientData.proteins.randomElement() ?? ""
     @State private var selectedSecondProtein: String?
-    @State private var selectedSauce = ""
-    @State private var selectedAcid = ""
-    @State private var selectedVehicle = ""
+    @State private var selectedSauce = IngredientData.sauces.randomElement() ?? ""
+    @State private var selectedAcid = IngredientData.acids.randomElement() ?? ""
+    @State private var selectedVehicle = IngredientData.vehicles.randomElement() ?? ""
     @State private var showingShareSheet = false
     @State private var isAnimatingProtein = false
     @State private var isAnimatingSecondProtein = false
@@ -48,7 +48,7 @@ struct ContentView: View {
                                     Button(action: {
                                         withAnimation(.spring()) {
                                             showSecondProtein = true
-                                            selectedSecondProtein = ""
+                                            selectedSecondProtein = nil
                                         }
                                     }) {
                                         Image(systemName: "plus.circle.fill")
@@ -157,7 +157,7 @@ struct ContentView: View {
                             .background(textColor)
                             .cornerRadius(8)
                     }
-                    .padding(.horizontal, 20)  // Extended padding to 20px
+                    .padding(.horizontal, 20)
                     .padding(.bottom)
                     .disabled(isAnimatingAny)
                 }
@@ -185,8 +185,9 @@ struct ContentView: View {
     }
     
     private func generateProtein() {
-        selectedProtein = " " // Add a space to prevent empty string
+        let currentProtein = selectedProtein // Store current value
         isAnimatingProtein = true
+        selectedProtein = currentProtein // Keep current value during animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             selectedProtein = IngredientData.proteins.randomElement() ?? ""
             isAnimatingProtein = false
@@ -194,8 +195,9 @@ struct ContentView: View {
     }
     
     private func generateSecondProtein() {
-        selectedSecondProtein = " "
+        let currentProtein = selectedSecondProtein ?? "" // Store current value
         isAnimatingSecondProtein = true
+        selectedSecondProtein = currentProtein // Keep current value during animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             var protein: String
             repeat {
@@ -207,8 +209,9 @@ struct ContentView: View {
     }
     
     private func generateSauce() {
-        selectedSauce = " " // Add a space to prevent empty string
+        let currentSauce = selectedSauce // Store current value
         isAnimatingSauce = true
+        selectedSauce = currentSauce // Keep current value during animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             selectedSauce = IngredientData.sauces.randomElement() ?? ""
             isAnimatingSauce = false
@@ -216,8 +219,9 @@ struct ContentView: View {
     }
     
     private func generateAcid() {
-        selectedAcid = " " // Add a space to prevent empty string
+        let currentAcid = selectedAcid // Store current value
         isAnimatingAcid = true
+        selectedAcid = currentAcid // Keep current value during animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             selectedAcid = IngredientData.acids.randomElement() ?? ""
             isAnimatingAcid = false
@@ -225,8 +229,9 @@ struct ContentView: View {
     }
     
     private func generateVehicle() {
-        selectedVehicle = " " // Add a space to prevent empty string
+        let currentVehicle = selectedVehicle // Store current value
         isAnimatingVehicle = true
+        selectedVehicle = currentVehicle // Keep current value during animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             selectedVehicle = IngredientData.vehicles.randomElement() ?? ""
             isAnimatingVehicle = false
