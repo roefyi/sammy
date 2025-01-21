@@ -7,71 +7,99 @@ struct FlipClockDigit: View {
     private let braunDark = Color(red: 0.13, green: 0.13, blue: 0.13)
     private let braunLight = Color(red: 0.95, green: 0.95, blue: 0.95)
     
-    @State private var rotation: Double = 0
-    @State private var dotOpacities: [Double] = [1, 0.3, 0.3]
-    @State private var animationTimer: Timer?
+    @State private var displayText = ""
+    @State private var showCursor = true
+    @State private var cursorTimer: Timer?
+    @State private var typeTimer: Timer?
+    @State private var currentIndex = 0
+    
+    // Typing characteristics
+    private let baseTypingSpeed: TimeInterval = 0.15
+    private let speedVariation: TimeInterval = 0.08
+    private let pauseChance: Double = 0.2
+    private let pauseDuration: TimeInterval = 0.35
+    private let totalAnimationTime: TimeInterval = 2.2 // Total time for animation
     
     var body: some View {
-        ZStack {
-            // Background frame
-            RoundedRectangle(cornerRadius: 4)
-                .fill(braunDark)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(braunDark, lineWidth: 1)
-                )
+        HStack(spacing: 0) {
+            Text(displayText)
+                .font(.system(.title3, design: .monospaced))
+                .foregroundColor(braunLight)
             
             if isAnimating {
-                // Loading dots
-                HStack(spacing: 8) {
-                    ForEach(0..<3) { index in
-                        Circle()
-                            .fill(braunLight)
-                            .frame(width: 8, height: 8)
-                            .opacity(dotOpacities[index])
-                    }
-                }
-            } else {
-                // Content
-                Text(text)
-                    .font(.system(.title2, design: .monospaced))
+                Text(showCursor ? "█" : " ")
+                    .font(.system(.title3, design: .monospaced))
                     .foregroundColor(braunLight)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 8)
             }
         }
-        .frame(height: 60)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .onChange(of: isAnimating) { newValue in
             if newValue {
-                startDotAnimation()
+                startAnimation()
             } else {
-                stopDotAnimation()
+                stopAnimation()
             }
         }
     }
     
-    private func startDotAnimation() {
-        animationTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { _ in
-            withAnimation(.easeInOut(duration: 0.3)) {
-                dotOpacities.rotate()
+    private func startAnimation() {
+        displayText = ""
+        currentIndex = 0
+        showCursor = true
+        
+        // Calculate timing for each character
+        let textLength = text.count
+        let timePerChar = (totalAnimationTime - 0.8) / Double(textLength) // Subtract initial delay
+        
+        // Start cursor blink
+        cursorTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            withAnimation(.easeInOut(duration: 0.1)) {
+                showCursor.toggle()
             }
+        }
+        
+        // Wait for 0.8 second before starting to type
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            typeNextCharacter(timePerChar: timePerChar)
         }
     }
     
-    private func stopDotAnimation() {
-        animationTimer?.invalidate()
-        animationTimer = nil
-        dotOpacities = [1, 0.3, 0.3]
-    }
-}
-
-extension Array {
-    mutating func rotate() {
-        guard count > 0 else { return }
-        let lastElement = self[count - 1]
-        for i in (1..<count).reversed() {
-            self[i] = self[i - 1]
+    private func typeNextCharacter(timePerChar: TimeInterval) {
+        guard currentIndex < text.count else {
+            finishTyping()
+            return
         }
-        self[0] = lastElement
+        
+        let index = text.index(text.startIndex, offsetBy: currentIndex)
+        displayText += String(text[index])
+        currentIndex += 1
+        
+        // Calculate next delay to maintain consistent total time
+        let randomVariation = Double.random(in: -speedVariation/2...speedVariation/2)
+        let nextTypeDelay = timePerChar + randomVariation
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + nextTypeDelay) {
+            typeNextCharacter(timePerChar: timePerChar)
+        }
+    }
+    
+    private func finishTyping() {
+        // Keep cursor blinking for a moment after typing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            stopAnimation()
+        }
+    }
+    
+    private func stopAnimation() {
+        cursorTimer?.invalidate()
+        cursorTimer = nil
+        typeTimer?.invalidate()
+        typeTimer = nil
+        
+        withAnimation {
+            displayText = text
+            showCursor = false
+        }
     }
 } 
+
